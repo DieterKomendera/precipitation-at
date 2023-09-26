@@ -26,7 +26,7 @@
 
 (clerk/html
  [:link {:rel "stylesheet"
-         :href "https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+         :href "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
          :crossorigin ""}])
 
 (def leaflet
@@ -35,7 +35,7 @@
    '(fn [value]
       (nextjournal.clerk.viewer/html
        (when-let [{:keys [lat lng res-lat res-lng]} value]
-         [nextjournal.clerk.viewer/with-d3-require {:package ["leaflet@1.9.3/dist/leaflet.js"]}
+         [nextjournal.clerk.viewer/with-d3-require {:package ["leaflet@1.9.4/dist/leaflet.js"]}
           (fn [leaflet]
             [:div {:style {:height 400}
                    :ref
