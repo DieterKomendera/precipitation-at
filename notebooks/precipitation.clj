@@ -1,4 +1,5 @@
 (ns precipitation
+  {:nextjournal.clerk/visibility {:code :hide :result :show}}
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [hato.client :as http]
