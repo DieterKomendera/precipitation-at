@@ -64,21 +64,25 @@
                          (.addTo (.rectangle leaflet rr-bounds (clj->js {:color "#ff7800" :weight 1})) m)
                          (.setView m location-latlng 13.7))))}])])))})
 
-(defn sum-on [date {:keys [lat lng]} ]
+(def precipitation-for
+  {:duration 5
+   :unit     ChronoUnit/DAYS})
+
+(defn sum-on [from to {:keys [lat lng]} ]
   (http/get (str  "https://dataset.api.hub.geosphere.at/v1/timeseries/historical/inca-v1-1h-1km"
                   "?parameters=RR"
-                  "&start=" (.minus date
-                                    5
-                                    (ChronoUnit/DAYS))
-                  "&end=" date
+                  "&start=" from
+                  "&end=" to
                   "&lat_lon=" lat "," lng)
             {:as :json}))
 
-
 ^::clerk/no-cache
 (def r
-  (sum-on (Instant/now)
-          @location))
+  (let [date (Instant/now)]
+    (sum-on
+     (.minus date (:duration precipitation-for) (:unit precipitation-for))
+     date
+     @location)))
 
 (comment
   (get-in r [:body :timestamps])
