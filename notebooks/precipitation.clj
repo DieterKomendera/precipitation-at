@@ -106,6 +106,12 @@
             (tc/map-rows (fn [row] (update row :timestamp #(LocalDateTime/from (.parse dtf %)))))))
 
 
+;; Click the map to calculate precipitation statistics for a different spot
+(clerk/with-viewer leaflet
+  (merge @location
+         res-latlng))
+
+
 (tc/aggregate ds #(reduce + (:RR %)))
 
 
@@ -116,13 +122,10 @@
       (tc/rename-columns {:$group-name "year"
                           "summary" "RR"})))
 
-(tc/rows ds-by-year :as-maps)
+(clerk/table
+ (tc/rows ds-by-year :as-maps))
 
-
-;; Click the map to calculate precipitation statistics for a different spot
-(clerk/with-viewer leaflet
-  (merge @location
-         res-latlng))
+{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 
 (comment
   (clerk/serve! {:browse? true})
