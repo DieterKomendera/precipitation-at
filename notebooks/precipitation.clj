@@ -23,8 +23,8 @@
 
 ^::clerk/sync
 (defonce location
-  (atom {:lat "48.2052886"
-         :lng "16.3423715"}))
+  (atom {:lat "48.2084828"
+         :lng "16.3731725"}))
 
 (clerk/html
  [:link {:rel "stylesheet"
