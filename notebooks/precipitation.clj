@@ -6,7 +6,7 @@
             [hato.middleware :as hm]
             [tablecloth.api :as tc]
             [nextjournal.clerk :as clerk])
-  (:import (java.time Instant LocalDateTime)
+  (:import (java.time Instant LocalDateTime LocalDate)
            (java.time.format DateTimeFormatter)
            (java.time.temporal ChronoUnit ChronoField)))
 
@@ -70,7 +70,7 @@
   {:duration (* 10 365)
    :unit     ChronoUnit/DAYS})
 
-(defn rain-time-series [from to {:keys [lat lng]} ]
+(defn rain-time-series* [from to {:keys [lat lng]} ]
   (http/get (str  "https://dataset.api.hub.geosphere.at/v1/timeseries/historical/inca-v1-1h-1km"
                   "?parameters=RR"
                   "&start=" from
@@ -78,13 +78,15 @@
                   "&lat_lon=" lat "," lng)
             {:as :json}))
 
+(defonce rain-time-series (memoize rain-time-series*))
+
 ^::clerk/no-cache
-(def r
-  (let [date (Instant/now)]
-    (rain-time-series
-     (.minus date (:duration precipitation-for) (:unit precipitation-for))
-     date
-     @location)))
+ (def r
+ (let [date (LocalDate/now)]
+   (rain-time-series
+    (.minus date (:duration precipitation-for) (:unit precipitation-for))
+    date
+    @location)))
 
 (comment
   (get-in r [:body :timestamps])
