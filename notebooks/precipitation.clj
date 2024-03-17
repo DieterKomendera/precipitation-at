@@ -6,8 +6,9 @@
             [hato.middleware :as hm]
             [tablecloth.api :as tc]
             [nextjournal.clerk :as clerk])
-  (:import [java.time Instant]
-           [java.time.temporal ChronoUnit]))
+  (:import (java.time Instant LocalDateTime)
+           (java.time.format DateTimeFormatter)
+           (java.time.temporal ChronoUnit ChronoField)))
 
 
 (defmethod hm/coerce-form-params :application/json
@@ -66,10 +67,10 @@
                          (.setView m location-latlng 13.7))))}])])))})
 
 (def precipitation-for
-  {:duration 5
+  {:duration (* 10 365)
    :unit     ChronoUnit/DAYS})
 
-(defn sum-on [from to {:keys [lat lng]} ]
+(defn rain-time-series [from to {:keys [lat lng]} ]
   (http/get (str  "https://dataset.api.hub.geosphere.at/v1/timeseries/historical/inca-v1-1h-1km"
                   "?parameters=RR"
                   "&start=" from
@@ -80,7 +81,7 @@
 ^::clerk/no-cache
 (def r
   (let [date (Instant/now)]
-    (sum-on
+    (rain-time-series
      (.minus date (:duration precipitation-for) (:unit precipitation-for))
      date
      @location)))
@@ -94,12 +95,33 @@
     {:res-lat lat
      :res-lng lng}))
 
-(def ds (tc/dataset [[:timestamp (get-in r [:body :timestamps])]
-                     [:RR (get-in r [:body :features 0 :properties :parameters :RR :data])]]))
+(def dtf DateTimeFormatter/ISO_OFFSET_DATE_TIME)
+
+(def ds (-> (tc/dataset [[:timestamp (get-in r [:body :timestamps])]
+                         [:RR (get-in r [:body :features 0 :properties :parameters :RR :data])]])
+            ;; some values are nil
+            (tc/replace-missing :RR :value 0)
+            (tc/map-rows (fn [row] (update row :timestamp #(LocalDateTime/from (.parse dtf %)))))))
+
 
 (tc/aggregate ds #(reduce + (:RR %)))
 
 
+(def ds-by-year
+  (-> ds
+      (tc/group-by (fn [row] (.get (:timestamp row) ChronoField/YEAR)) {:name "year"})
+      (tc/aggregate #(reduce + (:RR %)))
+      (tc/rename-columns {:$group-name "year"
+                          "summary" "RR"})))
+
+(tc/rows ds-by-year :as-maps)
+
+
+;; Click the map to calculate precipitation statistics for a different spot
 (clerk/with-viewer leaflet
   (merge @location
          res-latlng))
+
+(comment
+  (clerk/serve! {:browse? true})
+  )

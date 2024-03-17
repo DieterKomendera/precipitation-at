@@ -1,7 +1,7 @@
-{:deps {io.github.nextjournal/clerk {:git/sha "4c4983182061abd24201cd43fab6ee55dc16b7e8"}
-        org.clojure/clojure         {:mvn/version "1.12.0-alpha4"}
+{:deps {io.github.nextjournal/clerk {:git/sha "c741fcd021c333d6d3fb2ba000cc04bb5d3e8251"}
+        org.clojure/clojure         {:mvn/version "1.12.0-alpha7"}
         org.clojure/data.json       {:mvn/version "2.4.0"}
-        scicloj/tablecloth          {:mvn/version "6.103"}
-        hato/hato {:mvn/version "0.8.2"}}
+        scicloj/tablecloth          {:mvn/version "7.021"}
+        hato/hato                   {:mvn/version "0.9.0"}}
  :aliases
  {:nextjournal/garden {:exec-fn nextjournal.clerk/serve!}}}
